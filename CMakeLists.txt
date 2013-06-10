@@ -88,6 +88,7 @@ set(LLVM_ALL_TARGETS
   SystemZ
   X86
   XCore
+  rvex
   )
 
 # List of targets with JIT support:
