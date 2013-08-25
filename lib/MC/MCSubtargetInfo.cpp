@@ -41,7 +41,7 @@ MCSubtargetInfo::InitMCSubtargetInfo(StringRef TT, StringRef CPU, StringRef FS,
                                      const MCWriteProcResEntry *WPR,
                                      const MCWriteLatencyEntry *WL,
                                      const MCReadAdvanceEntry *RA,
-                                     const InstrStage *IS,
+                                     InstrStage *IS,
                                      const unsigned *OC,
                                      const unsigned *FP,
                                      unsigned NF, unsigned NP) {
