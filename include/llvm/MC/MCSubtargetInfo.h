@@ -38,7 +38,7 @@ class MCSubtargetInfo {
   const MCReadAdvanceEntry *ReadAdvanceTable;
   const MCSchedModel *CPUSchedModel;
 
-  InstrStage *Stages;            // Instruction itinerary stages
+  const InstrStage *Stages;            // Instruction itinerary stages
   const unsigned *OperandCycles;       // Itinerary operand cycles
   const unsigned *ForwardingPaths;     // Forwarding paths
   unsigned NumFeatures;                // Number of processor features
@@ -53,7 +53,7 @@ public:
                            const MCWriteProcResEntry *WPR,
                            const MCWriteLatencyEntry *WL,
                            const MCReadAdvanceEntry *RA,
-                           InstrStage *IS,
+                           const InstrStage *IS,
                            const unsigned *OC, const unsigned *FP,
                            unsigned NF, unsigned NP);
 
