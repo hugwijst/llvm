@@ -4,6 +4,8 @@ add_subdirectory(HowToUseJIT)
 add_subdirectory(Kaleidoscope)
 add_subdirectory(ModuleMaker)
 
+add_subdirectory(vex_llc)
+
 if( NOT WIN32 )
     add_subdirectory(ExceptionDemo)
 endif()
