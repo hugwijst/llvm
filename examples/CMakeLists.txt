@@ -5,6 +5,7 @@ add_subdirectory(Kaleidoscope)
 add_subdirectory(ModuleMaker)
 
 add_subdirectory(vex_llc)
+add_subdirectory(DFA)
 
 if( NOT WIN32 )
     add_subdirectory(ExceptionDemo)
