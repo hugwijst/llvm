@@ -140,7 +140,9 @@ AddCodeToMergeInOperand(Record *R, BitsInit *BI, const std::string &VarName,
     while (NumberedOp < NumberOps &&
            CGI.Operands.isFlatOperandNotEmitted(NumberedOp))
       ++NumberedOp;
-
+    // edit
+    if (NumberedOp >= NumberOps)
+        return;
     OpIdx = NumberedOp++;
   }
   
