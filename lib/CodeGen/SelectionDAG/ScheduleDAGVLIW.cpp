@@ -101,6 +101,8 @@ void ScheduleDAGVLIW::Schedule() {
 
   AvailableQueue->initNodes(SUnits);
 
+  HazardRec->Reset();
+
   listScheduleTopDown();
 
   AvailableQueue->releaseState();
