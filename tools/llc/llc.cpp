@@ -69,6 +69,11 @@ OptLevel("O",
 static cl::opt<std::string>
 TargetTriple("mtriple", cl::desc("Override target triple for module"));
 
+cl::opt<bool>
+DisableOutputNops("disable-output-nops",
+                        cl::desc("Disable nops in output"),
+                        cl::init(true));
+
 cl::opt<bool> NoVerify("disable-verify", cl::Hidden,
                        cl::desc("Do not verify input module"));
 

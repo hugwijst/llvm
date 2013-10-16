@@ -18,7 +18,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#define DEBUG_TYPE "post-RA-sched"
+//#define DEBUG_TYPE "post-RA-sched"
+#include "rvex.h"
 #include "llvm/CodeGen/Passes.h"
 #include "AggressiveAntiDepBreaker.h"
 #include "AntiDepBreaker.h"
@@ -55,36 +56,15 @@ STATISTIC(NumFixedAnti, "Number of fixed anti-dependencies");
 // Post-RA scheduling is enabled with
 // TargetSubtargetInfo.enablePostRAScheduler(). This flag can be used to
 // override the target.
-static cl::opt<bool>
-EnablePostRAScheduler("post-RA-scheduler",
-                       cl::desc("Enable scheduling after register allocation"),
-                       cl::init(false), cl::Hidden);
-static cl::opt<std::string>
-EnableAntiDepBreaking("break-anti-dependencies",
-                      cl::desc("Break post-RA scheduling anti-dependencies: "
-                               "\"critical\", \"all\", or \"none\""),
-                      cl::init("none"), cl::Hidden);
-
-// If DebugDiv > 0 then only schedule MBB with (ID % DebugDiv) == DebugMod
-static cl::opt<int>
-DebugDiv("postra-sched-debugdiv",
-                      cl::desc("Debug control MBBs that are scheduled"),
-                      cl::init(0), cl::Hidden);
-static cl::opt<int>
-DebugMod("postra-sched-debugmod",
-                      cl::desc("Debug control MBBs that are scheduled"),
-                      cl::init(0), cl::Hidden);
-
-AntiDepBreaker::~AntiDepBreaker() { }
 
 namespace {
-  class PostRAScheduler : public MachineFunctionPass {
+  class rvexPostRAScheduler : public MachineFunctionPass {
     const TargetInstrInfo *TII;
     RegisterClassInfo RegClassInfo;
 
   public:
     static char ID;
-    PostRAScheduler() : MachineFunctionPass(ID) {}
+    rvexPostRAScheduler() : MachineFunctionPass(ID) {}
 
     void getAnalysisUsage(AnalysisUsage &AU) const {
       AU.setPreservesCFG();
@@ -99,7 +79,7 @@ namespace {
 
     bool runOnMachineFunction(MachineFunction &Fn);
   };
-  char PostRAScheduler::ID = 0;
+  char rvexPostRAScheduler::ID = 0;
 
   class SchedulePostRATDList : public ScheduleDAGInstrs {
     /// AvailableQueue - The priority queue to use for the available SUnits.
@@ -186,10 +166,9 @@ namespace {
   };
 }
 
-char &llvm::PostRASchedulerID = PostRAScheduler::ID;
+//char &llvm::PostRASchedulerID = PostRAScheduler::ID;
 
-INITIALIZE_PASS(PostRAScheduler, "post-RA-sched",
-                "Post RA top-down list latency scheduler", false, false)
+
 
 SchedulePostRATDList::SchedulePostRATDList(
   MachineFunction &MF, MachineLoopInfo &MLI, MachineDominatorTree &MDT,
@@ -250,7 +229,7 @@ void SchedulePostRATDList::dumpSchedule() const {
 }
 #endif
 
-bool PostRAScheduler::runOnMachineFunction(MachineFunction &Fn) {
+bool rvexPostRAScheduler::runOnMachineFunction(MachineFunction &Fn) {
   TII = Fn.getTarget().getInstrInfo();
   MachineLoopInfo &MLI = getAnalysis<MachineLoopInfo>();
   MachineDominatorTree &MDT = getAnalysis<MachineDominatorTree>();
@@ -263,26 +242,21 @@ bool PostRAScheduler::runOnMachineFunction(MachineFunction &Fn) {
   TargetSubtargetInfo::AntiDepBreakMode AntiDepMode =
     TargetSubtargetInfo::ANTIDEP_NONE;
   SmallVector<const TargetRegisterClass*, 4> CriticalPathRCs;
-  if (EnablePostRAScheduler.getPosition() > 0) {
-    if (!EnablePostRAScheduler)
-      return false;
-  } else {
-    // Check that post-RA scheduling is enabled for this target.
-    // This may upgrade the AntiDepMode.
-    const TargetSubtargetInfo &ST = Fn.getTarget().getSubtarget<TargetSubtargetInfo>();
-    if (!ST.enablePostRAScheduler(PassConfig->getOptLevel(), AntiDepMode,
-                                  CriticalPathRCs))
-      return false;
-  }
+  // if (EnablePostRAScheduler.getPosition() > 0) {
+  //   if (!EnablePostRAScheduler)
+  //     return false;
+  // } else {
+  //   // Check that post-RA scheduling is enabled for this target.
+  //   // This may upgrade the AntiDepMode.
+  //   const TargetSubtargetInfo &ST = Fn.getTarget().getSubtarget<TargetSubtargetInfo>();
+  //   if (!ST.enablePostRAScheduler(PassConfig->getOptLevel(), AntiDepMode,
+  //                                 CriticalPathRCs))
+  //     return false;
+  // }
 
   // Check for antidep breaking override...
-  if (EnableAntiDepBreaking.getPosition() > 0) {
-    AntiDepMode = (EnableAntiDepBreaking == "all")
-      ? TargetSubtargetInfo::ANTIDEP_ALL
-      : ((EnableAntiDepBreaking == "critical")
-         ? TargetSubtargetInfo::ANTIDEP_CRITICAL
-         : TargetSubtargetInfo::ANTIDEP_NONE);
-  }
+
+
 
   DEBUG(dbgs() << "PostRAScheduler\n");
 
@@ -292,16 +266,7 @@ bool PostRAScheduler::runOnMachineFunction(MachineFunction &Fn) {
   // Loop over all of the basic blocks
   for (MachineFunction::iterator MBB = Fn.begin(), MBBe = Fn.end();
        MBB != MBBe; ++MBB) {
-#ifndef NDEBUG
-    // If DebugDiv > 0 then only schedule MBB with (ID % DebugDiv) == DebugMod
-    if (DebugDiv > 0) {
-      static int bbcnt = 0;
-      if (bbcnt++ % DebugDiv != DebugMod)
-        continue;
-      dbgs() << "*** DEBUG scheduling " << Fn.getName()
-             << ":BB#" << MBB->getNumber() << " ***\n";
-    }
-#endif
+
 
     // Initialize register live-range state for scheduling in this block.
     Scheduler.startBlock(MBB);
@@ -385,7 +350,7 @@ void SchedulePostRATDList::schedule() {
     }
   }
 
-  DEBUG(dbgs() << "********** List Scheduling **********\n");
+  DEBUG(dbgs() << "********** rvex List Scheduling **********\n");
   DEBUG(for (unsigned su = 0, e = SUnits.size(); su != e; ++su)
           SUnits[su].dumpAll(this));
 
@@ -712,9 +677,10 @@ void SchedulePostRATDList::ListScheduleTopDown() {
       } else if (!HasNoopHazards) {
         // Otherwise, we have a pipeline stall, but no other problem,
         // just advance the current cycle and try again.
-        DEBUG(dbgs() << "*** Stall in cycle " << CurCycle << '\n');
-        HazardRec->AdvanceCycle();
-        ++NumStalls;
+        DEBUG(dbgs() << "*** Stall in cycle, insert noop " << CurCycle << '\n');
+        HazardRec->EmitNoop();
+        Sequence.push_back(0);   // NULL here means noop
+        ++NumNoops;
       } else {
         // Otherwise, we have no instructions to issue and we have instructions
         // that will fault if we don't do this right.  This is the case for
@@ -773,4 +739,8 @@ void SchedulePostRATDList::EmitSchedule() {
   }
   DbgValues.clear();
   FirstDbgValue = NULL;
+}
+
+FunctionPass *llvm::creatervexPostRAScheduler() {
+  return new rvexPostRAScheduler();
 }
