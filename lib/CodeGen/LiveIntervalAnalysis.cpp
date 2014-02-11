@@ -183,7 +183,9 @@ void LiveIntervals::computeVirtRegInterval(LiveInterval &LI) {
   assert(LRCalc && "LRCalc not initialized.");
   assert(LI.empty() && "Should only compute empty intervals.");
   LRCalc->reset(MF, getSlotIndexes(), DomTree, &getVNInfoAllocator());
+    // DEBUG(dbgs() << "end: " << LI->ranges.front().end << '\n');
   LRCalc->createDeadDefs(LI);
+    // DEBUG(dbgs() << "end: " << LI->ranges.front().end << '\n');
   LRCalc->extendToUses(LI);
   computeDeadValues(&LI, LI, nullptr, nullptr);
 }
