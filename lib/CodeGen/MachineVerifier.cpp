@@ -1519,10 +1519,10 @@ MachineVerifier::verifyLiveIntervalSegment(const LiveInterval &LI,
         *OS << " in " << LI << '\n';
       }
     } else {
-      if (!hasRead) {
-        report("Instruction ending live range doesn't read the register", MI);
-        *OS << *I << " in " << LI << '\n';
-      }
+      // if (!hasRead) {
+      //   report("Instruction ending live range doesn't read the register", MI);
+      //   *OS << *I << " in " << LI << '\n';
+      // }
     }
   }
 

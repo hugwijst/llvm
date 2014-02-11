@@ -15,6 +15,7 @@
 #include "LiveRangeCalc.h"
 #include "llvm/CodeGen/MachineDominators.h"
 #include "llvm/CodeGen/MachineRegisterInfo.h"
+#include "llvm/Support/Debug.h"
 
 using namespace llvm;
 
@@ -59,6 +60,7 @@ void LiveRangeCalc::createDeadDefs(LiveInterval *LI, unsigned Reg) {
   }
 }
 
+extern bool Is_Generic_flag;
 
 void LiveRangeCalc::extendToUses(LiveInterval *LI, unsigned Reg) {
   assert(MRI && Indexes && "call reset() first");
@@ -87,6 +89,7 @@ void LiveRangeCalc::extendToUses(LiveInterval *LI, unsigned Reg) {
     } else {
       // This is a normal instruction.
       Idx = Indexes->getInstructionIndex(MI).getRegSlot();
+
       // Check for early-clobber redefs.
       unsigned DefIdx;
       if (MO.isDef()) {
@@ -99,6 +102,24 @@ void LiveRangeCalc::extendToUses(LiveInterval *LI, unsigned Reg) {
           Idx = Idx.getRegSlot(true);
       }
     }
+    
+
+    if (Is_Generic_flag)
+    {
+      DEBUG(dbgs() << "Kill index old: " << Idx << "\n");
+      // Kill.setIndex(temp + 100);
+      // SlotIndex IndexEnd = Indexes->getMBBStartIdx(MI->getParent());
+      // DEBUG(dbgs() << "start index: " << IndexEnd << "\n");
+
+      SlotIndex Start2, End2;
+      tie(Start2, End2) = Indexes->getMBBRange(MI->getParent());
+      DEBUG(dbgs() << "start: " << Start2 << "\n");
+      DEBUG(dbgs() << "end: " << End2 << "\n");    
+      // Idx = Idx.getNextIndex();
+      // Idx = Idx.getNextIndex();
+      Idx = End2;
+      DEBUG(dbgs() << "Kill index new: " << Idx << "\n");
+    }    
     extend(LI, Idx, Reg);
   }
 }
@@ -153,6 +174,9 @@ void LiveRangeCalc::extend(LiveInterval *LI,
   // know the dominating VNInfo.
   if (findReachingDefs(LI, KillMBB, Kill, PhysReg))
     return;
+
+
+
 
   // When there were multiple different values, we may need new PHIs.
   calculateValues();
