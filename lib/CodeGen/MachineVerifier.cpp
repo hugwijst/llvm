@@ -1526,10 +1526,10 @@ void MachineVerifier::verifyLiveRangeSegment(const LiveRange &LR,
         hasRead = true;
     }
     if (!S.end.isDead()) {
-      if (!hasRead) {
-        report("Instruction ending live segment doesn't read the register", MI);
-        *OS << S << " in " << LR << '\n';
-      }
+      //if (!hasRead) {
+      //  report("Instruction ending live segment doesn't read the register", MI);
+      //  *OS << S << " in " << LR << '\n';
+      //}
     }
   }
 

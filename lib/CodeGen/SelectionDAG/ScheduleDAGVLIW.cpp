@@ -95,7 +95,7 @@ private:
 /// Schedule - Schedule the DAG using list scheduling.
 void ScheduleDAGVLIW::Schedule() {
   DEBUG(dbgs()
-        << "********** List Scheduling BB#" << BB->getNumber()
+        << "********** VLIW List Scheduling BB#" << BB->getNumber()
         << " '" << BB->getName() << "' **********\n");
 
   // Build the scheduling graph.
