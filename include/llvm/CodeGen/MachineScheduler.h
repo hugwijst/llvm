@@ -448,6 +448,7 @@ protected:
 
   /// Move an instruction and update register pressure.
   void scheduleMI(SUnit *SU, bool IsTopNode);
+  void scheduleMI(SUnit *SU, bool IsTopNode, bool isNoop);
 
   // Lesser helpers...
 
