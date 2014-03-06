@@ -286,12 +286,32 @@ bool MachineScheduler::runOnMachineFunction(MachineFunction &mf) {
       // This invalidates 'RegionEnd' and 'I'.
       Scheduler->schedule();
 
-      // Close the current region.
-      Scheduler->exitRegion();
+
 
       // Scheduling has invalidated the current iterator 'I'. Ask the
       // scheduler for the top of it's scheduled region.
-      RegionEnd = Scheduler->begin();
+  
+
+
+      if (RegionEnd->isConditionalBranch()) {
+        if (llvm::prior(RegionEnd)->isCompare()) {
+          DEBUG(dbgs() << "Found branch & compare\n\tInsert NOP\n");
+          TII->insertNoop(*MBB, RegionEnd);
+        }
+      }
+      // if (RegionEnd->isReturn()) {
+      //   DEBUG(dbgs() << "found return\n");
+      //   llvm::prior(RegionEnd)->dump();
+      //   if (llvm::prior(RegionEnd)->mayLoad()) {
+      //     DEBUG(dbgs() << "Found return & load\n\tInsert NOP\n");
+      //     TII->insertNoop(*MBB, RegionEnd);
+      //   }
+      // }
+
+      // Close the current region.
+      Scheduler->exitRegion();      
+
+      RegionEnd = Scheduler->begin();    
     }
     assert(RemainingInstrs == 0 && "Instruction count mismatch!");
     Scheduler->finishBlock();
@@ -670,6 +690,8 @@ void ScheduleDAGMI::scheduleMI(SUnit *SU, bool IsTopNode) {
   // Move the instruction to its new location in the instruction stream.
   MachineInstr *MI = SU->getInstr();
 
+
+
   if (IsTopNode) {
     assert(SU->isTopReady() && "node still has unscheduled dependencies");
     if (&*CurrentTop == MI)
@@ -683,6 +705,72 @@ void ScheduleDAGMI::scheduleMI(SUnit *SU, bool IsTopNode) {
     TopRPTracker.advance();
     assert(TopRPTracker.getPos() == CurrentTop && "out of sync");
     updateScheduledPressure(TopRPTracker.getPressure().MaxSetPressure);
+
+  }
+  else {
+    assert(SU->isBottomReady() && "node still has unscheduled dependencies");
+    MachineBasicBlock::iterator priorII =
+      priorNonDebug(CurrentBottom, CurrentTop);
+    if (&*priorII == MI)
+      CurrentBottom = priorII;
+    else {
+      if (&*CurrentTop == MI) {
+        CurrentTop = nextIfDebug(++CurrentTop, priorII);
+        TopRPTracker.setPos(CurrentTop);
+      }
+      moveInstruction(MI, CurrentBottom);
+      CurrentBottom = MI;
+    }
+    // Update bottom scheduled pressure.
+    BotRPTracker.recede();
+    assert(BotRPTracker.getPos() == CurrentBottom && "out of sync");
+    updateScheduledPressure(BotRPTracker.getPressure().MaxSetPressure);
+  }
+}
+
+/// Move an instruction and update register pressure.
+void ScheduleDAGMI::scheduleMI(SUnit *SU, bool IsTopNode, bool isNoop) {
+  // Move the instruction to its new location in the instruction stream.
+
+  if (SU->InsertNop) {
+    DEBUG(dbgs() << "Time for nops!\n");
+    DEBUG(dbgs() << "Delay: " << SU->NopDelay << "\n");
+    const TargetInstrInfo *TII = MF.getTarget().getInstrInfo();
+
+    unsigned delay = SU->NopDelay - 1;
+    for (unsigned i = 0; i < delay; i++)
+      --CurrentTop;
+
+    TII->insertNoop(*BB, CurrentTop);
+
+    for (unsigned i = 0; i < delay; i++)
+      ++CurrentTop;
+  }
+    
+
+  // if (isNoop) {
+  //   const TargetInstrInfo *TII = MF.getTarget().getInstrInfo();
+  //   TII->insertNoop(*BB, CurrentTop);
+  //   return;    
+  // }
+
+  MachineInstr *MI = SU->getInstr();
+
+
+  if (IsTopNode) {
+    assert(SU->isTopReady() && "node still has unscheduled dependencies");
+    if (&*CurrentTop == MI)
+      CurrentTop = nextIfDebug(++CurrentTop, CurrentBottom);
+    else {
+      moveInstruction(MI, CurrentTop);
+      TopRPTracker.setPos(MI);
+    }
+
+    // Update top scheduled pressure.
+    TopRPTracker.advance();
+    assert(TopRPTracker.getPos() == CurrentTop && "out of sync");
+    updateScheduledPressure(TopRPTracker.getPressure().MaxSetPressure);
+
   }
   else {
     assert(SU->isBottomReady() && "node still has unscheduled dependencies");

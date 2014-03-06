@@ -355,6 +355,8 @@ protected:
   /// Move an instruction and update register pressure.
   void scheduleMI(SUnit *SU, bool IsTopNode);
 
+  void scheduleMI(SUnit *SU, bool IsTopNode, bool isNoop);
+
   /// Update scheduler DAG and queues after scheduling an instruction.
   void updateQueues(SUnit *SU, bool IsTopNode);
 
