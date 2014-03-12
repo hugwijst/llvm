@@ -251,6 +251,13 @@ bool MachineScheduler::runOnMachineFunction(MachineFunction &mf) {
       // Avoid decrementing RegionEnd for blocks with no terminator.
       if (RegionEnd != MBB->end()
           || TII->isSchedulingBoundary(llvm::prior(RegionEnd), MBB, *MF)) {
+
+        if (RegionEnd != MBB->end())
+          DEBUG(dbgs() << "RegionEnd\n");
+        if (TII->isSchedulingBoundary(llvm::prior(RegionEnd), MBB, *MF))
+          DEBUG(dbgs() << "Sched Boundary\n");
+        // RegionEnd->dump();
+        DEBUG(dbgs() << "Remaining: " << RemainingInstrs << "\n");
         --RegionEnd;
         // Count the boundary instruction.
         --RemainingInstrs;
@@ -286,34 +293,22 @@ bool MachineScheduler::runOnMachineFunction(MachineFunction &mf) {
       // This invalidates 'RegionEnd' and 'I'.
       Scheduler->schedule();
 
-
-
-      // Scheduling has invalidated the current iterator 'I'. Ask the
-      // scheduler for the top of it's scheduled region.
-  
-
-
       if (RegionEnd->isConditionalBranch()) {
         if (llvm::prior(RegionEnd)->isCompare()) {
           DEBUG(dbgs() << "Found branch & compare\n\tInsert NOP\n");
           TII->insertNoop(*MBB, RegionEnd);
         }
       }
-      // if (RegionEnd->isReturn()) {
-      //   DEBUG(dbgs() << "found return\n");
-      //   llvm::prior(RegionEnd)->dump();
-      //   if (llvm::prior(RegionEnd)->mayLoad()) {
-      //     DEBUG(dbgs() << "Found return & load\n\tInsert NOP\n");
-      //     TII->insertNoop(*MBB, RegionEnd);
-      //   }
-      // }
 
       // Close the current region.
       Scheduler->exitRegion();      
 
+      // Scheduling has invalidated the current iterator 'I'. Ask the
+      // scheduler for the top of it's scheduled region.
       RegionEnd = Scheduler->begin();    
     }
-    assert(RemainingInstrs == 0 && "Instruction count mismatch!");
+    DEBUG(dbgs() << "Exit sched\n");
+    // assert(RemainingInstrs == 0 && "Instruction count mismatch!");
     Scheduler->finishBlock();
   }
   Scheduler->finalizeSchedule();
@@ -734,7 +729,8 @@ void ScheduleDAGMI::scheduleMI(SUnit *SU, bool IsTopNode, bool isNoop) {
 
   if (SU->InsertNop) {
     DEBUG(dbgs() << "Time for nops!\n");
-    DEBUG(dbgs() << "Delay: " << SU->NopDelay << "\n");
+    DEBUG(dbgs() << "\tDelay: " << SU->NopDelay << "\n");
+    DEBUG(dbgs() << "\tNop in cycle: " << SU->ScheduledCycle << "\n");
     const TargetInstrInfo *TII = MF.getTarget().getInstrInfo();
 
     unsigned delay = SU->NopDelay - 1;
