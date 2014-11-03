@@ -16,6 +16,8 @@
 #include "llvm/CodeGen/MachineRegisterInfo.h"
 #include "llvm/Support/Debug.h"
 
+#include "../Target/rvex/MCTargetDesc/rvexSubtargetInfo.h"
+
 using namespace llvm;
 
 #define DEBUG_TYPE "regalloc"
@@ -60,8 +62,6 @@ void LiveRangeCalc::createDeadDefs(LiveRange &LR, unsigned Reg) {
   }
 }
 
-extern bool Is_Generic_flag;
-
 void LiveRangeCalc::extendToUses(LiveRange &LR, unsigned Reg) {
   assert(MRI && Indexes && "call reset() first");
 
@@ -102,7 +102,7 @@ void LiveRangeCalc::extendToUses(LiveRange &LR, unsigned Reg) {
       }
     }
 
-    if (Is_Generic_flag)
+    if (rvexIsGeneric())
     {
       DEBUG(dbgs() << "Kill index old: " << Idx << "\n");
       // Kill.setIndex(temp + 100);
