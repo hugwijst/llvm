@@ -16,8 +16,6 @@
 #include "llvm/CodeGen/MachineRegisterInfo.h"
 #include "llvm/Support/Debug.h"
 
-#include "../Target/rvex/MCTargetDesc/rvexSubtargetInfo.h"
-
 using namespace llvm;
 
 #define DEBUG_TYPE "regalloc"
@@ -100,23 +98,6 @@ void LiveRangeCalc::extendToUses(LiveRange &LR, unsigned Reg) {
         if (MI->getOperand(DefIdx).isEarlyClobber())
           Idx = Idx.getRegSlot(true);
       }
-    }
-
-    if (rvexIsGeneric())
-    {
-      DEBUG(dbgs() << "Kill index old: " << Idx << "\n");
-      // Kill.setIndex(temp + 100);
-      // SlotIndex IndexEnd = Indexes->getMBBStartIdx(MI->getParent());
-      // DEBUG(dbgs() << "start index: " << IndexEnd << "\n");
-
-      SlotIndex Start2, End2;
-      std::tie(Start2, End2) = Indexes->getMBBRange(MI->getParent());
-      DEBUG(dbgs() << "start: " << Start2 << "\n");
-      DEBUG(dbgs() << "end: " << End2 << "\n");
-      // Idx = Idx.getNextIndex();
-      // Idx = Idx.getNextIndex();
-      Idx = End2;
-      DEBUG(dbgs() << "Kill index new: " << Idx << "\n");
     }
 
     extend(LR, Idx, Reg);
