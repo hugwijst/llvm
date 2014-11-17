@@ -100,9 +100,9 @@ void rvexFrameLowering::emitPrologue(MachineFunction &MF) const {
   MachineBasicBlock &MBB   = MF.front();
   MachineFrameInfo *MFI    = MF.getFrameInfo();
   rvexFunctionInfo *rvexFI = MF.getInfo<rvexFunctionInfo>();
-  const TargetRegisterInfo *TRI = MF.getSubtarget().getRegisterInfo();
+  const TargetRegisterInfo *TRI = MF.getTarget().getRegisterInfo();
   const rvexInstrInfo &TII =
-    *static_cast<const rvexInstrInfo*>(MF.getTarget().getSubtargetImpl()->getInstrInfo());
+    *static_cast<const rvexInstrInfo*>(MF.getTarget().getInstrInfo());
   MachineBasicBlock::iterator MBBI = MBB.begin();
   DebugLoc dl = MBBI != MBB.end() ? MBBI->getDebugLoc() : DebugLoc();
   unsigned SP = rvex::R1;
@@ -170,7 +170,7 @@ void rvexFrameLowering::emitEpilogue(MachineFunction &MF,
   int NumBytes = (int) MFI->getStackSize();
 
     const rvexInstrInfo &TII =
-    *static_cast<const rvexInstrInfo*>(MF.getSubtarget().getInstrInfo());
+    *static_cast<const rvexInstrInfo*>(MF.getTarget().getInstrInfo());
 
   // Replace return with return that can change the stackpointer
 

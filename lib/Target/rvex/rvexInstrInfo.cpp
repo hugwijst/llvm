@@ -397,7 +397,7 @@ DFAPacketizer *rvexInstrInfo::
 CreateTargetScheduleState(const TargetMachine *TM,
                           const ScheduleDAG *DAG) const {
   
-  const InstrItineraryData *II = TM->getSubtarget<rvexSubtarget>().getInstrItineraryData();
+  const InstrItineraryData *II = TM->getInstrItineraryData();
 
   DFAPacketizer *temp = TM->getSubtarget<rvexSubtarget>().createDFAPacketizer(II);
   

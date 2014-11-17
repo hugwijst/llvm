@@ -57,9 +57,8 @@ class rvexVLIWResourceModel {
 public:
 rvexVLIWResourceModel(const TargetMachine &TM, const TargetSchedModel *SM) :
     SchedModel(SM), TotalPackets(0) {
-    const TargetSubtargetInfo *STI = TM.getSubtargetImpl();
-    ResourcesModel = STI->getInstrInfo()->CreateTargetScheduleState(&TM,NULL);
-    TRI = STI->getRegisterInfo(); 
+    ResourcesModel = TM.getInstrInfo()->CreateTargetScheduleState(&TM,NULL);
+    TRI = TM.getRegisterInfo(); 
     // This hard requirement could be relaxed,
     // but for now do not let it proceed.
     assert(ResourcesModel && "Unimplemented CreateTargetScheduleState.");

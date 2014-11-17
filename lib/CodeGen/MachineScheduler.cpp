@@ -1232,7 +1232,7 @@ void ScheduleDAGMILive::scheduleMI(SUnit *SU, bool IsTopNode, bool isNoop) {
   if (SU->InsertNop) {
     DEBUG(dbgs() << "Time for nops!\n");
     DEBUG(dbgs() << "Delay: " << SU->NopDelay << "\n");
-    const TargetInstrInfo *TII = MF.getSubtarget().getInstrInfo();
+    const TargetInstrInfo *TII = MF.getTarget().getInstrInfo();
 
     unsigned delay = SU->NopDelay - 1;
     for (unsigned i = 0; i < delay; i++)

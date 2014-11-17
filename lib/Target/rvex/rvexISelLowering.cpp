@@ -950,7 +950,7 @@ getOpndList(SmallVectorImpl<SDValue> &Ops,
                                       RegsToPass[i].second.getValueType()));
 
   // Add a register mask operand representing the call-preserved registers.
-  const TargetRegisterInfo *TRI = CLI.DAG.getMachineFunction().getSubtarget().getRegisterInfo();
+  const TargetRegisterInfo *TRI = CLI.DAG.getMachineFunction().getTarget().getRegisterInfo();
   const uint32_t *Mask = TRI->getCallPreservedMask(CLI.CallConv);
   assert(Mask && "Missing call preserved mask for calling convention");
   Ops.push_back(CLI.DAG.getRegisterMask(Mask));
@@ -977,12 +977,12 @@ rvexTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
 
   MachineFunction &MF = DAG.getMachineFunction();
   MachineFrameInfo *MFI = MF.getFrameInfo();
-  const TargetFrameLowering *TFL = MF.getSubtarget().getFrameLowering();
+  const TargetFrameLowering *TFL = MF.getTarget().getFrameLowering();
   bool IsPIC = getTargetMachine().getRelocationModel() == Reloc::PIC_;
 
   // Analyze operands of the call, assigning locations to each operand.
   SmallVector<CCValAssign, 16> ArgLocs;
-  CCState CCInfo(CallConv, IsVarArg, DAG.getMachineFunction(),
+  CCState CCInfo(CallConv, IsVarArg, DAG.getMachineFunction(), getTargetMachine(),
                  ArgLocs, *DAG.getContext());
   rvexCC rvexCCInfo(CallConv, true, CCInfo);
 
@@ -1171,7 +1171,7 @@ rvexTargetLowering::LowerCallResult(SDValue Chain, SDValue InFlag,
                                     const Type *RetTy) const {
   // Assign locations to each value returned by this call.
   SmallVector<CCValAssign, 16> RVLocs;
-  CCState CCInfo(CallConv, IsVarArg, DAG.getMachineFunction(),
+  CCState CCInfo(CallConv, IsVarArg, DAG.getMachineFunction(), getTargetMachine(),
                  RVLocs, *DAG.getContext());
   rvexCC rvexCCInfo(CallConv, true, CCInfo);
 
@@ -1218,7 +1218,7 @@ rvexTargetLowering::LowerFormalArguments(SDValue Chain,
 
   // Assign locations to all of the incoming arguments.
   SmallVector<CCValAssign, 16> ArgLocs;
-  CCState CCInfo(CallConv, IsVarArg, DAG.getMachineFunction(),
+  CCState CCInfo(CallConv, IsVarArg, DAG.getMachineFunction(), getTargetMachine(),
                  ArgLocs, *DAG.getContext());
   rvexCC rvexCCInfo(CallConv, true, CCInfo);
   Function::const_arg_iterator FuncArg =
@@ -1353,7 +1353,7 @@ rvexTargetLowering::CanLowerReturn(CallingConv::ID CallConv,
                                    const SmallVectorImpl<ISD::OutputArg> &Outs,
                                    LLVMContext &Context) const {
   SmallVector<CCValAssign, 16> RVLocs;
-  CCState CCInfo(CallConv, IsVarArg, MF,
+  CCState CCInfo(CallConv, IsVarArg, MF, getTargetMachine(),
                  RVLocs, Context);
   return CCInfo.CheckReturn(Outs, RetCC_rvex);
 }
@@ -1370,7 +1370,7 @@ rvexTargetLowering::LowerReturn(SDValue Chain,
   MachineFunction &MF = DAG.getMachineFunction();
 
   // CCState - Info about the registers and stack slot.
-  CCState CCInfo(CallConv, IsVarArg, MF, RVLocs,
+  CCState CCInfo(CallConv, IsVarArg, MF, getTargetMachine(), RVLocs,
                  *DAG.getContext());
   rvexCC rvexCCInfo(CallConv, true, CCInfo);
 
@@ -1722,7 +1722,7 @@ passByValArg(SDValue Chain, SDLoc DL,
         SDValue LoadVal =
           DAG.getExtLoad(ISD::ZEXTLOAD, DL, RegTy, Chain, LoadPtr,
                          MachinePointerInfo(), MVT::getIntegerVT(LoadSize * 8),
-                         false, false, false, Alignment);
+                         false, false, Alignment);
         MemOpChains.push_back(LoadVal.getValue(1));
 
         // Shift the loaded value.

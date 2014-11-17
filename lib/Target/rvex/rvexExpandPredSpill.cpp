@@ -153,7 +153,7 @@ bool rvexExpandPredSpillCode::runOnMachineFunction(MachineFunction &MF) {
                "Src is not a Branch Register");
         assert(MI->getOperand(1).isReg() && "Not a Register. Store");
         unsigned FP = MI->getOperand(1).getReg();
-        assert(FP == TM.getSubtargetImpl()->getRegisterInfo()->getFrameRegister(MF) &&
+        assert(FP == TM.getRegisterInfo()->getFrameRegister(MF) &&
                "Operand 1 is not FrameReg");
         assert(MI->getOperand(2).isImm() && "Operand 2 Not offset");
         int FI = MI->getOperand(2).getImm();
@@ -191,7 +191,7 @@ bool rvexExpandPredSpillCode::runOnMachineFunction(MachineFunction &MF) {
                "Not a Predicate Register");
         assert(MI->getOperand(1).isReg() && "Not a register");
         unsigned FP = MI->getOperand(1).getReg();
-        assert(FP == TM.getSubtargetImpl()->getRegisterInfo()->getFrameRegister(MF) &&
+        assert(FP == TM.getRegisterInfo()->getFrameRegister(MF) &&
                "Not a Frame Pointer");
         assert(MI->getOperand(2).isImm() && "Not a Frame Index");
         unsigned FI = MI->getOperand(2).getImm();

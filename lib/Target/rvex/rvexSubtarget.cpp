@@ -54,7 +54,7 @@ rvexSubtarget::rvexSubtarget(const std::string &TT, const std::string &CPU,
     CPUName = "rvex";
 
   InstrItins = getInstrItineraryForCPU(CPUName);
-  SchedModel = getSchedModelForCPU(CPUName);
+  SchedModel = *getSchedModelForCPU(CPUName);
 
   // Parse features string.
   ParseSubtargetFeatures(CPUName, FS);

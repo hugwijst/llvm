@@ -199,9 +199,11 @@ private:
   unsigned NumSchedClasses;
   // Instruction itinerary tables used by InstrItineraryData.
   friend class InstrItineraryData;
-  const InstrItinerary *InstrItineraries;
 
 public:
+  // Moved from private for 3.5 release. Public in master.
+  const InstrItinerary *InstrItineraries;
+
   // Default's must be specified as static const literals so that tablegenerated
   // target code can use it in static initializers. The defaults need to be
   // initialized in this default ctor because some clients directly instantiate

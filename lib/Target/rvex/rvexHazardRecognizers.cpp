@@ -83,7 +83,7 @@ rvexHazardRecognizer::rvexHazardRecognizer(const InstrItineraryData *II,
     DEBUG(dbgs() << "Disabled scoreboard hazard recognizer\n");
   else {
     // A nonempty itinerary must have a SchedModel.
-    IssueWidth = ItinData->SchedModel.IssueWidth;
+    IssueWidth = ItinData->SchedModel->IssueWidth;
     DEBUG(dbgs() << "Using scoreboard hazard recognizer: Depth = "
           << ScoreboardDepth << '\n');
   }

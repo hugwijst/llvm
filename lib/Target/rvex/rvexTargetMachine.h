@@ -24,6 +24,8 @@ namespace llvm {
   class rvexTargetMachine : public LLVMTargetMachine {
     rvexSubtarget       Subtarget;
 
+    bool IsVLIWEnabled;
+
   public:
     rvexTargetMachine(const Target &T, StringRef TT,
                       StringRef CPU, StringRef FS, const TargetOptions &Options,
@@ -31,7 +33,21 @@ namespace llvm {
                       CodeGenOpt::Level OL,
                       bool isLittle);
 
+    const rvexInstrInfo *getInstrInfo() const override { return getSubtargetImpl()->getInstrInfo(); }
     const rvexSubtarget *getSubtargetImpl() const override { return &Subtarget; }
+    const DataLayout *getDataLayout() const override { return getSubtargetImpl()->getDataLayout();}
+
+    const rvexRegisterInfo *getRegisterInfo() const override {
+      return getSubtargetImpl()->getRegisterInfo();
+    }
+
+    const rvexTargetLowering *getTargetLowering() const override { return getSubtargetImpl()->getTargetLowering(); }
+
+    const InstrItineraryData *getInstrItineraryData() const override { return getSubtargetImpl()->getInstrItineraryData(); }
+
+    const rvexSelectionDAGInfo* getSelectionDAGInfo() const override { return getSubtargetImpl()->getSelectionDAGInfo(); }
+
+    const TargetFrameLowering *getFrameLowering() const override { return getSubtargetImpl()->getFrameLowering(); }
 
     // Pass Pipeline Configuration
     TargetPassConfig *createPassConfig(PassManagerBase &PM) override;

@@ -96,7 +96,8 @@ namespace {
 
   public:
     // Ctor.
-    rvexVLIWPacketizerList(MachineFunction &MF, MachineLoopInfo &MLI);
+    rvexVLIWPacketizerList(MachineFunction &MF, MachineLoopInfo &MLI,
+                             MachineDominatorTree &MDT);
 
 		//default implementation of virtual function addToPacket will do
 
@@ -148,17 +149,19 @@ namespace {
 
 // rvexVLIWPacketizerList Ctor.
 rvexVLIWPacketizerList::rvexVLIWPacketizerList(MachineFunction &MF,
-                                                   MachineLoopInfo &MLI)
-  : VLIWPacketizerList(MF, MLI, true){
+                                                   MachineLoopInfo &MLI,
+                                                   MachineDominatorTree &MDT)
+  : VLIWPacketizerList(MF, MLI, MDT, true){
 }
 
 bool rvexVLIWPacketizer::runOnMachineFunction(MachineFunction &Fn) {
   DEBUG(errs() << "Voor VLIW packetizer!\n");
-  const TargetInstrInfo *TII = Fn.getSubtarget().getInstrInfo();
+  const TargetInstrInfo *TII = Fn.getTarget().getInstrInfo();
   MachineLoopInfo &MLI = getAnalysis<MachineLoopInfo>();
+  MachineDominatorTree &MDT = getAnalysis<MachineDominatorTree>();
 
   // Instantiate the packetizer.
-  rvexVLIWPacketizerList Packetizer(Fn, MLI);
+  rvexVLIWPacketizerList Packetizer(Fn, MLI, MDT);
 
   // DFA state table should not be empty.
   assert(Packetizer.getResourceTracker() && "Empty DFA table!");
